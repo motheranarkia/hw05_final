@@ -53,7 +53,7 @@ class FollowPagesTests(TestCase):
         Follow.objects.create(author=self.author, user=self.follower_user)
         response = self.follower_client.get('/follow/')
         first_object = response.context['page_obj'][0]
-        self.assertEqual(first_object.text, 'Тестовый текст для подписанных')
+        self.assertEqual(first_object.text, 'Тестовый текст')
         Post.objects.create(text='Тестовый текст для неподписанных',
                             author=self.author)
         post = Post.objects.get(text='Тестовый текст для неподписанных')
