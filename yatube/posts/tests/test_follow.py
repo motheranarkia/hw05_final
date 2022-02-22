@@ -54,7 +54,8 @@ class FollowPagesTests(TestCase):
         response = self.follower_client.get('/follow/')
         first_object = response.context['page_obj'][0]
         self.assertEqual(first_object.text, 'Тестовый текст для подписанных')
-        Post.objects.create(text='Тестовый текст для неподписанных', author=self.author)
+        Post.objects.create(text='Тестовый текст для неподписанных',
+                            author=self.author)
         post = Post.objects.get(text='Тестовый текст для неподписанных')
         response = self.unfollower_client.get('/follow/')
         self.assertNotContains(response, post)
