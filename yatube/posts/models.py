@@ -23,19 +23,19 @@ class Post(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='posts'
+        related_name='posts',
     )
     group = models.ForeignKey(
         Group,
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        related_name='posts'
+        related_name='posts',
     )
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
     )
 
     class Meta:
@@ -46,25 +46,37 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post,
-                             on_delete=models.CASCADE,
-                             related_name='comments')
-    author = models.ForeignKey(User,
-                               on_delete=models.CASCADE,
-                               verbose_name='Автор',
-                               related_name='comments')
-    text = models.TextField('Текст комментария',
-                            help_text='Введите текст комментария')
-    created = models.DateTimeField('Дата публикации комментария',
-                                   auto_now_add=True)
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
+        related_name='comments',
+    )
+    text = models.TextField(
+        'Текст комментария',
+        help_text='Введите текст комментария',
+    )
+    created = models.DateTimeField(
+        'Дата публикации комментария',
+        auto_now_add=True,
+    )
 
 
 class Follow(models.Model):
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE,
-                             related_name='follower',
-                             help_text='Вы подписываетесь на:')
-    author = models.ForeignKey(User,
-                               on_delete=models.CASCADE,
-                               related_name='following',
-                               help_text='Автор поста')
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+        help_text='Вы подписываетесь на:',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+        help_text='Автор поста',
+    )

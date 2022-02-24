@@ -31,9 +31,9 @@ class PostFormFormTests(TestCase):
             group=cls.group,
         )
         cls.form = PostForm()
-        cls.comment = Comment.objects.create(text='Комментарий',
-                                             author=cls.author,
-                                             post=cls.post)
+        cls.comment = Comment.objects.create(
+            text='Комментарий', author=cls.author, post=cls.post
+        )
 
     def setUp(self):
         self.guest_client = Client()
@@ -65,9 +65,10 @@ class PostFormFormTests(TestCase):
             follow=True
         )
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        self.assertTrue(Post.objects.filter(
-                        text='Тестовый текст',
-                        image='posts/small.gif').exists())
+        last_object = Post.objects.last()
+        self.assertEqual(last_object.group.id, self.group.id)
+        self.assertEqual(last_object.text, self.post.text)
+        self.assertEqual(last_object.image, self.post.image)
 
     def test_edit_post(self):
         """при отправке валидной формы происходит изменение поста."""
@@ -89,8 +90,9 @@ class PostFormFormTests(TestCase):
         авторизации"""
         posts_count = Post.objects.count()
         response = self.guest_client.post(
-            reverse('posts:create_post'),
-            follow=True)
+            reverse(
+                'posts:create_post'), follow=True
+        )
         self.assertRedirects(response, '/auth/login/?next=/create/')
         self.assertEqual(posts_count, Post.objects.count())
 
@@ -117,12 +119,16 @@ class PostFormFormTests(TestCase):
         form_data = {
             'text': 'Новый комментарий',
         }
-        self.authorized_author.post(
+        response = self.authorized_author.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=form_data,
             follow=True
         )
+        self.assertRedirects(response, reverse(
+            'posts:post_detail', kwargs={'post_id': self.post.id}))
         self.assertEqual(Comment.objects.count(), comment_count + 1)
+        last_comment = Comment.objects.order_by("-id").first()
+        self.assertEqual(form_data['text'], last_comment.text)
 
     def test_guest_can_not_add_comment(self):
         """А неавторизованный - нет"""

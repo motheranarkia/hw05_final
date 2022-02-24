@@ -3,7 +3,6 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django import forms
 from django.db.models.fields.files import ImageFieldFile
-# from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 
 from ..models import Post, Group
@@ -86,7 +85,6 @@ class TaskPagesTests(TestCase):
         self.assertEqual(post.text, self.post.text)
         self.assertEqual(post.group, self.post.group)
         self.assertEqual(post.author, self.author)
-        # self.assertEqual(context.image, posts.image)
 
     def test_index_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
@@ -159,9 +157,11 @@ class TaskPagesTests(TestCase):
         page_list = (
             reverse('posts:index'),
             reverse(
-                'posts:group_posts', kwargs={'slug': self.group.slug}),
+                'posts:group_posts', kwargs={'slug': self.group.slug}
+            ),
             reverse(
-                'posts:profile', kwargs={'username': self.user.username})
+                'posts:profile', kwargs={'username': self.user.username}
+            )
         )
         for object in page_list:
             with self.subTest(object=object):
@@ -183,19 +183,22 @@ class TaskPagesTests(TestCase):
         for page_obj in list:
             with self.subTest(page=page_obj):
                 response = self.authorized_author.get(page_obj)
-                image = response.context["page_obj"][0].image
+                image = response.context['page_obj'][0].image
                 self.assertIsInstance(image, ImageFieldFile)
 
     def test_cache_index(self):
         """Проверка работы кэширования."""
         cache.clear()
         response = self.authorized_client.get(
-            reverse('posts:index'))
-        post = Post.objects.get(id=1)
+            reverse(
+                'posts:index')
+        )
+        post = Post.objects.get(id=self.post.id)
         cache_save = response.content
         post.delete()
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(response.content, cache_save)
-        cache.clear()
-        response = self.client.get(reverse('posts:index'))
-        self.assertNotEqual(response.content, cache_save)
+
+# "Не нашел проверок действий подписки и отписки" -
+# Тесты подписки и отписки в test_follow, или я не поняла
+# И нужны какие-то еще?

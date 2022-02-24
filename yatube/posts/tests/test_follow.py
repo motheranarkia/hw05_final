@@ -30,32 +30,35 @@ class FollowPagesTests(TestCase):
         self.unfollower_client = Client()
         self.unfollower_client.force_login(self.unfollower_user)
 
-    def test_auth_user_follow_or_unfollow(self):
-        """Авторизованный пользователь может подписываться на других
-        пользователей и удалять их из подписок."""
-        follow_count = Follow.objects.count()
+    def test_user_follow(self):
+        """Юзер может подписываться"""
         self.unfollower_client.get(
-            reverse('posts:profile', kwargs={'username': self.author}))
-        self.follow = Follow.objects.create(
+            reverse('posts:profile_follow', kwargs={'username': self.author}))
+        self.assertTrue(Follow.objects.filter(
             user=self.unfollower_user,
             author=self.author,
-        )
-        self.assertEqual(Follow.objects.count(), follow_count + 1)
-        self.follow_del = Follow.objects.filter(
+        ).exists())
+
+    def test_user_unfollow(self):
+        """Юзер может отписываться"""
+        self.unfollower_client.get(
+            reverse('posts:profile_unfollow',
+                    kwargs={'username': self.author}))
+        self.assertFalse(Follow.objects.filter(
             user=self.unfollower_user,
             author=self.author,
-        ).delete()
-        self.assertEqual(Follow.objects.count(), follow_count)
+        ).exists())
 
     def test_follow_post(self):
         """Проверка появления записей в ленте у подписчиков,
         и отсутствия ее у неподписанных"""
         Follow.objects.create(author=self.author, user=self.follower_user)
-        response = self.follower_client.get('/follow/')
+        response = self.follower_client.get(reverse('posts:follow_index'))
         first_object = response.context['page_obj'][0]
         self.assertEqual(first_object.text, 'Тестовый текст')
-        Post.objects.create(text='Тестовый текст для неподписанных',
-                            author=self.author)
-        post = Post.objects.get(text='Тестовый текст для неподписанных')
-        response = self.unfollower_client.get('/follow/')
-        self.assertNotContains(response, post)
+        post = Post.objects.create(
+            text='Тестовый текст для неподписанных',
+            author=self.author
+        )
+        response = self.unfollower_client.get(reverse('posts:follow_index'))
+        self.assertNotIn(post, response.context['page_obj'])

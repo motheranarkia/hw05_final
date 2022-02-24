@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Follow, Post, Comment
+from .models import Post, Comment
 
 from django.utils.translation import gettext_lazy as _
 
@@ -33,11 +33,3 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = {'text'}
         labels = {'text': 'Текст'}
-
-
-class FollowForm(forms.ModelForm):
-    """Форма подписки на авторов."""
-    class Meta:
-        model = Follow
-        fields = {'user'}
-        labels = {'Пользователь подписывается на:'}
