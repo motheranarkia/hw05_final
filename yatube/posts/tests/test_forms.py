@@ -118,6 +118,8 @@ class PostFormFormTests(TestCase):
         comment_count = Comment.objects.count()
         form_data = {
             'text': 'Новый комментарий',
+            'author': self.post.author,
+            'post_id': self.post.id
         }
         response = self.authorized_author.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
@@ -125,10 +127,13 @@ class PostFormFormTests(TestCase):
             follow=True
         )
         self.assertRedirects(response, reverse(
-            'posts:post_detail', kwargs={'post_id': self.post.id}))
-        self.assertEqual(Comment.objects.count(), comment_count + 1)
+            'posts:post_detail', kwargs={'post_id': self.post.id})
+        )
         last_comment = Comment.objects.order_by("-id").first()
         self.assertEqual(form_data['text'], last_comment.text)
+        self.assertEqual(form_data['author'], self.post.author)
+        self.assertEqual(form_data['post_id'], self.post.id)
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
 
     def test_guest_can_not_add_comment(self):
         """А неавторизованный - нет"""

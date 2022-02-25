@@ -9,8 +9,7 @@ from posts.forms import PostForm, CommentForm
 
 def pagination(posts,
                page_number: int,
-               paginator_count_of_posts:
-               int = settings.POST_COUNT
+               paginator_count_of_posts: int = settings.POST_COUNT
                ) -> int:
     paginator = Paginator(posts, paginator_count_of_posts)
     page_obj = paginator.get_page(page_number)

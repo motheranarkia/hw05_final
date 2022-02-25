@@ -32,8 +32,15 @@ class FollowPagesTests(TestCase):
 
     def test_user_follow(self):
         """Юзер может подписываться"""
+        follows_count = Follow.objects.count()
+        self.assertFalse(Follow.objects.filter(
+            user=self.unfollower_user,
+            author=self.author).exists()
+        )
         self.unfollower_client.get(
-            reverse('posts:profile_follow', kwargs={'username': self.author}))
+            reverse('posts:profile_follow', kwargs={'username': self.author})
+        )
+        self.assertEqual(Follow.objects.count(), follows_count + 1)
         self.assertTrue(Follow.objects.filter(
             user=self.unfollower_user,
             author=self.author,
@@ -41,24 +48,29 @@ class FollowPagesTests(TestCase):
 
     def test_user_unfollow(self):
         """Юзер может отписываться"""
+        Follow.objects.create(author=self.author, user=self.unfollower_user)
+        follows_before = Follow.objects.count()
         self.unfollower_client.get(
             reverse('posts:profile_unfollow',
-                    kwargs={'username': self.author}))
-        self.assertFalse(Follow.objects.filter(
-            user=self.unfollower_user,
-            author=self.author,
-        ).exists())
+                    kwargs={'username': self.author})
+        )
+        self.assertEqual(Follow.objects.count(), follows_before - 1)
 
     def test_follow_post(self):
-        """Проверка появления записей в ленте у подписчиков,
-        и отсутствия ее у неподписанных"""
-        Follow.objects.create(author=self.author, user=self.follower_user)
+        """Новый пост появляется в ленте подписчика"""
+        Follow.objects.create(author=self.author, user=self.unfollower_user)
         response = self.follower_client.get(reverse('posts:follow_index'))
-        first_object = response.context['page_obj'][0]
-        self.assertEqual(first_object.text, 'Тестовый текст')
-        post = Post.objects.create(
-            text='Тестовый текст для неподписанных',
-            author=self.author
-        )
+        count_posts = len(response.context['page_obj'])
+        Post.objects.create(author=self.author, text='Тестовый текст')
+        response = self.follower_client.get(reverse('posts:follow_index'))
+        new_count_posts = len(response.context['page_obj'])
+        self.assertEqual(count_posts + 1, new_count_posts)
+
+    def test_posts_new_post_not_add_to_not_follower(self):
+        """Новый пост не появляется в ленте не_подписчика."""
         response = self.unfollower_client.get(reverse('posts:follow_index'))
-        self.assertNotIn(post, response.context['page_obj'])
+        count_posts = len(response.context['page_obj'])
+        Post.objects.create(author=self.author, text='Тестовый текст')
+        response = self.unfollower_client.get(reverse('posts:follow_index'))
+        new_count_posts = len(response.context['page_obj'])
+        self.assertEqual(count_posts, new_count_posts)

@@ -190,15 +190,10 @@ class TaskPagesTests(TestCase):
         """Проверка работы кэширования."""
         cache.clear()
         response = self.authorized_client.get(
-            reverse(
-                'posts:index')
+            reverse('posts:index')
         )
         post = Post.objects.get(id=self.post.id)
         cache_save = response.content
         post.delete()
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(response.content, cache_save)
-
-# "Не нашел проверок действий подписки и отписки" -
-# Тесты подписки и отписки в test_follow, или я не поняла
-# И нужны какие-то еще?
