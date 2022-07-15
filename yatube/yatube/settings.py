@@ -25,7 +25,7 @@ SECRET_KEY = '2yvd_x--vc%qn6@6xcqvnn7&x9r32hs^hudt7xgj0p4cnp)ri&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['158.160.6.215', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['158.160.6.215', 'localhost', 'yatube-anarkia.hopto.org']
 
 
 # Application definition
